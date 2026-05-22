@@ -1,21 +1,33 @@
-FROM        docker.io/library/openjdk:21-ea AS builder
-WORKDIR     /app
-COPY        ./ /app/
-RUN         chmod +x ./gradlew && ./gradlew bootJar --no-daemon -x test
+# ---------- Build Stage ----------
+    FROM gradle:8.7.0-jdk21 AS builder
 
-#FROM        sonarsource/sonar-scanner-cli AS sonar-scanner
-#WORKDIR     /usr/src
-#COPY        --from=builder /app /usr/src
-#RUN         sonar-scanner \
-#            -Dsonar.host.url=http://172.31.17.79:9000 \
-#            -Dsonar.login=admin -Dsonar.password=admin123 -Dsonar.qualitygate.wait=true \
-#            -Dsonar.projectKey=portfolio-service \
-#            -Dsonar.sources=. -Dsonar.java.binaries=./build/classes && \
-#            touch /tmp/scan-success
-
-FROM        docker.io/redhat/ubi9:latest
-RUN         dnf install java-21-openjdk.x86_64 -y
-#COPY        --from=sonar-scanner /tmp/scan-success /tmp/
-COPY        --from=builder  /app/build/libs/*.jar portfolio-service.jar
-ENTRYPOINT  [ "java", "-jar", "./portfolio-service.jar" ]
-
+    WORKDIR /app
+    
+    # Copy Gradle files first for layer caching
+    COPY gradlew .
+    COPY gradle gradle
+    COPY build.gradle .
+    COPY settings.gradle .
+    
+    RUN chmod +x gradlew
+    
+    # Download dependencies first (better caching)
+    RUN ./gradlew dependencies --no-daemon
+    
+    # Copy remaining source code
+    COPY src src
+    
+    # Build application
+    RUN ./gradlew bootJar --no-daemon -x test
+    
+    
+    # ---------- Runtime Stage ----------
+    FROM eclipse-temurin:21-jre
+    
+    WORKDIR /app
+    
+    COPY --from=builder /app/build/libs/*.jar app.jar
+    
+    EXPOSE 8080
+    
+    ENTRYPOINT ["java", "-jar", "app.jar"]
