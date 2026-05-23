@@ -3,6 +3,7 @@ WORKDIR     /app
 COPY        ./ /app/
 RUN         chmod +x ./gradlew && ./gradlew bootJar --no-daemon -x test
 
+
 #FROM        sonarsource/sonar-scanner-cli AS sonar-scanner
 #WORKDIR     /usr/src
 #COPY        --from=builder /app /usr/src
