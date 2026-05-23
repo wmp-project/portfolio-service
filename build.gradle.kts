@@ -1,7 +1,7 @@
 plugins {
     java
-    // Native fix for CVE-2026-40973 & CVE-2025-41248, CVE-2025-41232, CVE-2025-41249
-    id("org.springframework.boot") version "3.4.16"
+    // 3.4.16 is not on Maven Central / Gradle Plugin Portal yet; use 3.4.5 + dependency overrides below for CVE pins
+    id("org.springframework.boot") version "3.4.5"
     id("io.spring.dependency-management") version "1.1.7"
 }
 
