@@ -13,7 +13,6 @@ RUN         sed -i 's/\r$//' ./gradlew && chmod +x ./gradlew && ./gradlew bootJa
 #            -Dsonar.projectKey=portfolio-service \
 #            -Dsonar.sources=. -Dsonar.java.binaries=./build/classes && \
 #            touch /tmp/scan-success
-
 FROM        docker.io/redhat/ubi9:latest
 RUN         dnf install java-21-openjdk.x86_64 -y
 #COPY        --from=sonar-scanner /tmp/scan-success /tmp/
