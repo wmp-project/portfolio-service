@@ -1,8 +1,7 @@
 FROM        docker.io/library/openjdk:21-ea AS builder
 WORKDIR     /app
 COPY        ./ /app/
-# Strip Windows CRLF from gradlew (fixes: /bin/sh^M: bad interpreter)
-RUN         sed -i 's/\r$//' ./gradlew && chmod +x ./gradlew && ./gradlew bootJar --no-daemon -x test
+RUN         chmod +x ./gradlew && ./gradlew bootJar --no-daemon -x test
 
 #FROM        sonarsource/sonar-scanner-cli AS sonar-scanner
 #WORKDIR     /usr/src
@@ -13,9 +12,9 @@ RUN         sed -i 's/\r$//' ./gradlew && chmod +x ./gradlew && ./gradlew bootJa
 #            -Dsonar.projectKey=portfolio-service \
 #            -Dsonar.sources=. -Dsonar.java.binaries=./build/classes && \
 #            touch /tmp/scan-success
+
 FROM        docker.io/redhat/ubi9:latest
 RUN         dnf install java-21-openjdk.x86_64 -y
 #COPY        --from=sonar-scanner /tmp/scan-success /tmp/
 COPY        --from=builder  /app/build/libs/*.jar portfolio-service.jar
 ENTRYPOINT  [ "java", "-jar", "./portfolio-service.jar" ]
-
